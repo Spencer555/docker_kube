@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: mongodb-deployment
+  labels:
+    app: mongodb
+spec:
+  replicas: 1
+  # how many replicas of the pod u wanna create
+  selector: 
+    matchLabels:
+      app: mongodb 
+  template: 
+    metadata: 
+      labels:
+        app: mongodb
+    spec:
+    # we want one container on the pod nginx on port 80
+      containers: 
+      - name: mongodb
+        image: mongo
+        ports:
+        # check docs for default port 
+        - containerPort: 27017
+        env:
+        # ur env variables 
+        # this is going to be checked into a repo so dont add important details
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef: 
+              name: mongodb-secret
+              key: mongo-root-username
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef: 
+              name: mongodb-secret
+              key: mongo-root-password 
+
+
+# service configuration internal service
+--- #this is to indicate configuration sepration 
+
+apiVersion: v1 
+kind: Service 
+metadata: 
+    name: mongodb-service
+spec:
+# to be able to connect the db to the pod we use selector to reference the label of the mongo app
+    selector:
+        app: mongodb
+    ports:
+        - protocol: TCP 
+        # the service port
+          port: 27017 
+          # the target container port
+          targetPort: 27017

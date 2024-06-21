@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-express 
+  labels: 
+    app: mongo-express
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-express
+  template:
+    metadata:
+      labels:
+        app: mongo-express
+    spec:
+      containers:
+      - name: mongo-express
+        image: mongo-express
+        ports: 
+        - containerPort: 8081
+        env:
+        - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+          valueFrom:
+            secretKeyRef: 
+              name: mongodb-secret
+              key: mongo-root-username 
+
+        - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+          valueFrom:
+            secretKeyRef: 
+              name: mongodb-secret
+              key: mongo-root-password 
+        - name: ME_CONFIG_MONGODB_SERVER
+          valueFrom:
+            configMapKeyRef: 
+            # what u called your configmap
+              name: mongodb-configmap
+              key: database_url 
+---
+# service configuration external
+apiVersion: v1 
+kind: Service 
+metadata: 
+    name: mongo-express-service
+spec:
+    selector:
+        app: mongodb
+    type: LoadBalancer
+    # it accepts the external request by assigining the exteranl service ip addres
+    # u only define type for external servicer because internal gives cluster ip by default
+    ports:
+        - protocol: TCP 
+        # the service port
+          port: 8081
+          # the target container port
+          targetPort: 8081
+          nodePort: 30000
+          # this has a range and this is the minimum
+          # the port u put in browser to access the service or port for external ip
+
+
+# to be continued

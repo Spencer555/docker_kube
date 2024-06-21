@@ -1,0 +1,6 @@
+node_modules
+Dockerfile
+.git
+.gitignore
+# exclude file ending in certain extensions *.js 
+# exclude folders foldername/**

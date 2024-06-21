@@ -1,0 +1,8 @@
+# info stored here config map can be accessed by more than one pod etc
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: mongodb-configmap
+data:
+    database_url: mongodb-service
+    # the name we gave to the service in mongo-deployment.yaml in th mongo-deploy yaml

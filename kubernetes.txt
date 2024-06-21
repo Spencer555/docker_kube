@@ -1,0 +1,138 @@
+its an open source  docker orchestration tool to manage containers developed by google 
+
+it helps ur manage them in diff env physical, cloud etc 
+
+microservices tech resulted in application to be resulted in 100s of containers which need to be managed 
+
+feature of kubernetes or what it gurantees 
+
+high availabilty or no downtime
+slability or high performance 
+disaster recovery (backup and restore)
+
+
+kubernetes architechture 
+its made up of at least one master node and then connected to it is worker nodes where each node has a kublet process(it a process that makes it possible for the nodes to communicate or talk to each other to execute tasks like running application processes  ) running on it
+
+
+a worker node has doeker containers of different application deployed on it depending on how the workload is distributed u would have differenct no of containers working on worker nodes and worker nodes are where the app runs but the master node runs serveral kubernetes processes necessary to run and manage the cluster e.g api server it is the entry point to the k8s cluster which every node talks to and the control manager which checks what need to be repaired and if a something died and need to be restarted and scheduler which is responsible for scheduling containers on different node based on workload
+
+u have to have a backup of ur master at least 2 in ur k8s cluster so if one is down the others take over 
+
+
+node and pod 
+
+a worker node or in k8s a node the smallest unit is a pod 
+a pod is and abstraction of a container and it creates a running env or a layer on top of a container so we have an application pod and maybe a database pod that uses its own container a pod is meant to one application in it or a side service 
+
+k8s offers a virtual network and each pod gets and ipaddress so that they can communicate with each other 
+
+and pod are ephermiral meaning they can die easily and a new one gets created in its place  which is given a new ip 
+
+because of that a component of called service is use which is used to give the app or db a permanent ip address and the lifecycles of the service and pods are not connected so if a pod dies the ip does not change 
+
+and for your app to be accessible to the browser or outside world u need a component called external service a service that opens the communication from external sources 
+
+and for your dbase u create an internal one so it does not get accessed by outsiders 
+
+ingress - since your service use ip address and port we need a service to forward from our domain name 
+
+
+config map and secret 
+done in the env but its usualy built in the dbase url  so for that purpose k8s has a ConfigMap so u just connect it to the pod and pod get the config map in the data you use  this can also contain dont put in your crednetials use secret its the same as configmap but used for credentials and things u dont want others to have access to 
+
+
+volumes 
+
+data storage e.g a dbase pod if its gets restarted the data would be gone so we store it in a volume which attaches a physical storage to your pod remote or storage of local machine which is not part of your k8s cluster so now data become persistent because k8s does not manage data persistence 
+
+
+deployment stateful set 
+a service has 2 functionalites a permanent ip and a load balancer (catch a request and forward it to a less busy pod) so e.g in master we need more than one just incase one fails we wont create the exact thing as a replica we just specify the blueprints for how many replica u want to run this method is called deployment 
+
+in practice u wont be creating pods but creating deployments (blueprints) and u can scale up or down 
+
+dbase cant be replicated with deployment because dbase have state and to have replica they would need to a sys in which each pod ar writing to the db and reading from the db storage in order to avoid data inconsistencies this feature is offered by statefull set which can be used for dbases like mysql and mongo db etc this handles and avoids database inconsistencies but its more difficult than working with deployments thats why most host dbase out of k8s cluster
+
+so if our server node  crashes we have a backup that takes over and our app is more robust until the crashed one get replicated so no down time
+
+
+minikube and kubectl 
+
+minikube 
+if u want to test something in ur local machine we use minicube to replicate the production one so we can test our stuff
+
+so it creates a virtual box on your pc  and a node runs in the virtual box 
+
+its a 1  node k8s cluster thats runs on a virutal box for testing purposes
+
+kubectl 
+a command line tool for k8s 
+the api servers is the main entry point into the cluster so what ever you want to do to configure etc u need to use the api server so u can use kubectl to talk to it u can use ui, api or cli but kubectl is the most powerfull of all with it u can basically do anything u want in kubernetes
+
+so once the kubectl submit the commands to the api server(create pods, destroy pods etc) the worker nodes make it happen, it can be used for any type of kubernetes cluster 
+
+just download minikube which has kubectl as a dependency and add path to env variables the type minikube start in cmd 
+
+minikube status 
+to know the status of ur clusers 
+
+
+kubectl get nodes 
+to get the status ur nodes
+
+kubectl version 
+to know ur k8s version for both server and client
+
+minikube is for the startup and deleting the cluster and kubectl is for the rest
+
+kubectl get pod 
+know u r pods  
+
+kubectl get services 
+know your services 
+
+to create a pod 
+u create a deployment to create the pod based on nginx image 
+kubectl create deployment nginx-depl --image=nginx
+
+
+debuging pods 
+
+kubectl logs podname
+to get the logs of ur pods
+
+to describe pod 
+kubectl describe pod podname
+
+u can use it for service etc 
+kubectl describe service servicename
+
+
+interactive terminal usefull 
+kubectl exec -it podname -- bin/bash 
+
+
+
+to apply config file so u cant edit and change ur file and reapply it
+kubectl apply -f name_of_config_file.yaml 
+
+we are going to deploy 2 apps mongo db and mongo express 
+
+so the flow goes like this 
+request from browser then to mongo express external service  then to mongo express pod then it connect to the internal service of mongo db the dbase url then it forward it to mongo db pod which authenticate the request using the credentials 
+
+kubectl get all 
+gets u all the components in the cluster 
+
+
+in secret values must be base 64 to do get this value in a bash terminal 
+e.g for username
+echo -n 'username' | base64
+
+u have to create secret b4 deployment if u re going to refrence it in deployment so order of creation matters
+
+so use the kubectl apply -f for them 
+
+now we create internal service so other pods can talk to db  which is added to the mongo-deployments.yaml
+kubectl describe service mongodb-service

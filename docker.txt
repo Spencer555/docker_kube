@@ -1,0 +1,184 @@
+containers - are an abstraction at the app layer that packages code and dependencies together. multiple containers can run on the same machine and share the os kernel with other containers, each running as isolated processes in user space
+
+vitual machine - are abstraction of physical hardware turning one server into many servers the hypervisor allows multiple VMs to run on a single machine. each VM includes a full copy of an operating system, the application, necessary binaries and libraries - taking up tens of GBs. VMs can also be slow to boot
+
+
+benefits over vm
+u can run container in seconds instead of minutes
+dont need full os 
+use less memory
+less resouces results less disk space
+
+
+docker image - a template for creating an env of ur choice it can be a dbase or webapps
+
+snapshot - a is instances of ur docker image taken at a specific time so when there is an error u can go back 
+
+docker image 
+ has everything needed to run your apps e.g os, software, appcode
+
+dockerhub - a registry(a place to download images)
+
+container 
+ a running instance of an image 
+
+
+to pull an image
+docker pull image name
+
+list of images 
+docker images
+
+to run a container 
+docker run imagename
+
+list of containers running
+docker container ls 
+or 
+docker ps 
+
+
+to run the container in the background or detached mode
+docker run -d nginx:latest
+
+
+
+exposing ports
+the container we are running is exposing a tcp port 80 so from the host we want to map our host port 8080 to the image tcp port  we do this by adding -p and port 
+
+docker run -d -p 8080:80 nginx 
+
+to map more than 1 port to port 80 or any other port 
+
+docker run -d -p 3000:80 -p 8080:80 nginx
+
+
+to stop containers 
+docker stop containername or id 
+
+
+to start container
+docker start containername or id  
+
+to see all containers running or not 
+docker ps -a  
+
+to delete containers  
+docker rm containername or id   
+
+to del ete all containers 
+docker ps -aq to get only the numeric ids of the container 
+this wont work on running containers 
+
+docker rm -f_$(docker ps -aq)
+
+
+to name a docker container
+
+docker run --name website -d -p 3000:80 -p 8080:80 nginx
+
+volumes
+allows sharing of data between host and container and also between containers 
+
+u get the container create the volume and it allows u to shared the data
+
+
+
+creating a volume 
+
+docker run --name nginx -v /some-source_of_content:/destionation_in_container/ -d nginx
+
+the pwd is the current directory u re in 
+use %windowsCmdCode% when it specifiy linux $(pwd)
+
+docker run --name amg -v $(pwd):/usr/share/nginx/html:ro -d -p 8080:80 nginx
+
+for windows 
+this is a read only volume
+docker run --name website -v %cd%:/usr/share/nginx/html:ro -d -p 8080:80 nginx
+
+for windows 
+this is a read and write volume
+docker run --name website -v %cd%:/usr/share/nginx/html -d -p 8080:80 nginx
+
+execute in interactive mode 
+docker exec -it website bash
+
+
+to remove running container 
+docker rm -f containername or id 
+
+
+sharing volume between two containers
+assuming we want to share volume bet our website contianer and another one 
+to map a volumes bet 2 containers
+new container name and the one u re maping from 
+docker run --name website-copy --volumes-from website -d -p 8081:80 nginx 
+
+
+build ur own images 
+u use a docker file 
+a series of steps that define how ur image is built
+
+when in development u mount a volume when in production u build a image
+
+
+list of images 
+docker images ls 
+
+
+builing ur own image - it should contain everything ur app needs to run create a Dockerfile inside of the root folder
+
+when u build an image u dont do it from scratch u use an existing image
+
+to build it  first part is the name then the tag name  then location usualy the current directory called . -
+docker build --tag website:tagname .
+
+
+docker ignore is used to ignore files u dont need
+
+benefits of tags and versioning 
+
+allows you to control image version 
+avoid breaking changes 
+it safe
+
+to overwrite a tag 
+e.g the website image 
+docker build -t spl-website:latest .
+
+then we build our new tag 
+               old tag name       new tagname
+docker tag spl-website:latest splnewtag-website:1
+with this u can go back to a prev version fix ur bugs and drop a brand new one
+this same method is used for different versions of app
+
+docker registry 
+highly scalable server side application that stores and lets you distribute docker images
+used in your CD/CI Pipeline
+run your applications
+
+
+to ship to docker registry
+just push 
+
+there are two types of registry private and public providers(dockerhub, quay.io, amazon ec 2 contianer registry)
+
+to push to repo
+
+docker push username  test_website:tagname
+            username/imagename:tagname
+
+
+just type docker login enter ur credentials and push 
+
+
+to inspect the container 
+docker inspect containerid
+
+to check container logs 
+
+docker logs containerid
+
+to get into a container the directory can be any one u want
+docker exec -it containerid /bin/bash
